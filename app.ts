@@ -1,38 +1,37 @@
-interface IObserverHandlers {
-  next?: (value: any) => void;
-  error?: (error: any) => void;
+interface IObserverHandlers<T = unknown> {
+  next?: (value: T) => void;
+  error?: (error: unknown) => void;
   complete?: () => void;
 }
 
-interface IObserver {
-  next: (value: any) => void;
-  error: (error: any) => void;
+interface IObserver<T = unknown> {
+  next: (value: T) => void;
+  error: (error: unknown) => void;
   complete: () => void;
   unsubscribe: () => void;
 }
 
-class Observer implements IObserver {
-  private handlers: IObserverHandlers;
+class Observer<T = unknown> implements IObserver<T> {
+  private handlers: IObserverHandlers<T>;
   private isUnsubscribed: boolean;
   private _unsubscribe?: () => void;
 
-  constructor(handlers) {
+  constructor(handlers: IObserverHandlers<T>) {
     this.handlers = handlers;
     this.isUnsubscribed = false;
   }
 
-  next(value) {
+  next(value: T) {
     if (this.handlers.next && !this.isUnsubscribed) {
       this.handlers.next(value);
     }
   }
 
-  error(error) {
+  error(error: unknown) {
     if (!this.isUnsubscribed) {
       if (this.handlers.error) {
         this.handlers.error(error);
       }
-
       this.unsubscribe();
     }
   }
@@ -42,14 +41,12 @@ class Observer implements IObserver {
       if (this.handlers.complete) {
         this.handlers.complete();
       }
-
       this.unsubscribe();
     }
   }
 
   unsubscribe() {
     this.isUnsubscribed = true;
-
     if (this._unsubscribe) {
       this._unsubscribe();
     }
@@ -60,14 +57,16 @@ class Observer implements IObserver {
   }
 }
 
-interface IObservable {
-  _subscribe: (observer: Observer) => (() => void) | void;
+interface IObservable<T = unknown> {
+  _subscribe: (observer: Observer<T>) => (() => void) | void;
 }
 
-class Observable<T> implements IObservable {
-  public _subscribe: (observer: Observer) => (() => void) | void;
+class Observable<T = unknown> implements IObservable<T> {
+  public _subscribe: (observer: Observer<T>) => (() => void) | void;
 
-  constructor(subscribe: (observer: Observer) => (() => void) | void) {
+  private constructor(
+    subscribe: (observer: Observer<T>) => (() => void) | void
+  ) {
     this._subscribe = subscribe;
   }
 
@@ -75,15 +74,12 @@ class Observable<T> implements IObservable {
     return new Observable((observer) => {
       values.forEach((value) => observer.next(value));
       observer.complete();
-      return () => {
-        console.log("unsubscribed");
-      };
+      return () => console.log("unsubscribed");
     });
   }
 
-  subscribe(obs: Partial<IObserver>) {
+  subscribe(obs: Partial<IObserver<T>>) {
     const observer = new Observer(obs);
-
     const unsubscribeFn = this._subscribe(observer);
     observer.setUnsubscribe(
       typeof unsubscribeFn === "function" ? unsubscribeFn : undefined
@@ -108,7 +104,7 @@ type UserMockType = {
   age: number;
   roles: string[];
   createdAt: Date;
-  isDeleated: boolean;
+  isDeleted: boolean;
 };
 
 const userMock: UserMockType = {
@@ -116,18 +112,18 @@ const userMock: UserMockType = {
   age: 26,
   roles: ["user", "admin"],
   createdAt: new Date(),
-  isDeleated: false,
+  isDeleted: false,
 };
 
-type requestMockType = {
+type RequestMockType = {
   method: typeof HTTP_POST_METHOD | typeof HTTP_GET_METHOD;
   host: string;
   path: string;
   body?: UserMockType;
-  params: Record<string, any>; // { [prop: string]: any }
+  params: Record<string, string>;
 };
 
-const requestsMock: requestMockType[] = [
+const requestsMock: RequestMockType[] = [
   {
     method: HTTP_POST_METHOD,
     host: "service.example",
@@ -145,7 +141,7 @@ const requestsMock: requestMockType[] = [
   },
 ];
 
-type HandleRequestType = (request: any) => {
+type HandleRequestType = (request: RequestMockType) => {
   status: typeof HTTP_STATUS_OK | typeof HTTP_STATUS_INTERNAL_SERVER_ERROR;
 };
 
@@ -153,7 +149,8 @@ const handleRequest: HandleRequestType = (request) => {
   // handling of request
   return { status: HTTP_STATUS_OK };
 };
-const handleError = (error) => {
+
+const handleError = (error: unknown) => {
   // handling of error
   return { status: HTTP_STATUS_INTERNAL_SERVER_ERROR };
 };

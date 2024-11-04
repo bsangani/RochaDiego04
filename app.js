@@ -30,7 +30,6 @@ var Observer = /** @class */ (function () {
             this._unsubscribe();
         }
     };
-    // Add a method to set the _unsubscribe function
     Observer.prototype.setUnsubscribe = function (unsubscribeFn) {
         this._unsubscribe = unsubscribeFn;
     };
@@ -44,14 +43,11 @@ var Observable = /** @class */ (function () {
         return new Observable(function (observer) {
             values.forEach(function (value) { return observer.next(value); });
             observer.complete();
-            return function () {
-                console.log("unsubscribed");
-            };
+            return function () { return console.log("unsubscribed"); };
         });
     };
     Observable.prototype.subscribe = function (obs) {
         var observer = new Observer(obs);
-        // Use the new setUnsubscribe method to assign the unsubscribe function
         var unsubscribeFn = this._subscribe(observer);
         observer.setUnsubscribe(typeof unsubscribeFn === "function" ? unsubscribeFn : undefined);
         return {
@@ -71,7 +67,7 @@ var userMock = {
     age: 26,
     roles: ["user", "admin"],
     createdAt: new Date(),
-    isDeleated: false,
+    isDeleted: false,
 };
 var requestsMock = [
     {
