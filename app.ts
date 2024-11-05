@@ -1,17 +1,17 @@
-interface IObserverHandlers<T = unknown> {
+interface IObserverHandlers<T> {
   next?: (value: T) => void;
-  error?: (error: unknown) => void;
+  error?: (error: Error) => void;
   complete?: () => void;
 }
 
-interface IObserver<T = unknown> {
+interface IObserver<T> {
   next: (value: T) => void;
-  error: (error: unknown) => void;
+  error: (error: Error) => void;
   complete: () => void;
   unsubscribe: () => void;
 }
 
-class Observer<T = unknown> implements IObserver<T> {
+class Observer<T> implements IObserver<T> {
   private handlers: IObserverHandlers<T>;
   private isUnsubscribed: boolean;
   private _unsubscribe?: () => void;
@@ -27,7 +27,7 @@ class Observer<T = unknown> implements IObserver<T> {
     }
   }
 
-  error(error: unknown) {
+  error(error: Error) {
     if (!this.isUnsubscribed) {
       if (this.handlers.error) {
         this.handlers.error(error);
@@ -57,11 +57,11 @@ class Observer<T = unknown> implements IObserver<T> {
   }
 }
 
-interface IObservable<T = unknown> {
+interface IObservable<T> {
   _subscribe: (observer: Observer<T>) => (() => void) | void;
 }
 
-class Observable<T = unknown> implements IObservable<T> {
+class Observable<T> implements IObservable<T> {
   public _subscribe: (observer: Observer<T>) => (() => void) | void;
 
   private constructor(
@@ -150,7 +150,7 @@ const handleRequest: HandleRequestType = (request) => {
   return { status: HTTP_STATUS_OK };
 };
 
-const handleError = (error: unknown) => {
+const handleError = (error: Error) => {
   // handling of error
   return { status: HTTP_STATUS_INTERNAL_SERVER_ERROR };
 };
